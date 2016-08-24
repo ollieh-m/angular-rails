@@ -63,7 +63,35 @@ describe RecipesController do
       let(:recipe_id) { -9999 }
       it { expect(response.status).to eq(404) }
     end
-    
+  end
+  
+  describe 'POST #create as an external http request' do
+    before do
+      xhr :post, :create, format: :json, recipe: {name: 'Toast', instructions: 'Add bread to toaster, push lever down'}
+    end
+    it { expect(response.status).to eq 201 }
+    it { expect(Recipe.last.name).to eq 'Toast' }
+    it { expect(Recipe.last.instructions).to eq 'Add bread to toaster, push lever down' }
+  end
+  
+  describe 'PUT #update as an external http request' do
+    let(:recipe){ Recipe.create!(name: 'Toast', instructions: 'Add bread to toaster, push lever down') }
+    before do
+      xhr :put, :update, format: :json, id: recipe.id, recipe: {name: 'Toast squares', instructions: 'Add bread to toaster, push lever down, cut'}
+      recipe.reload
+    end
+    it { expect(response.status).to eq 204}
+    it { expect(recipe.name).to eq 'Toast squares' }
+    it { expect(recipe.instructions).to eq 'Add bread to toaster, push lever down, cut' }
+  end
+  
+  describe 'DELETE #destroy as an external http request' do
+    let(:recipe_id){ Recipe.create!(name: 'Toast', instructions: 'Add bread to toaster, push lever down').id }
+    before do
+      xhr :delete, :destroy, format: :json, id: recipe_id
+    end
+    it { expect(response.status).to eq 204 }
+    it { expect(Recipe.find_by_id(recipe_id)).to be_nil }
   end
 
 end

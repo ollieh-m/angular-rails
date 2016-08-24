@@ -38,7 +38,32 @@ describe RecipesController do
         expect(results.size).to eq(0)
       end
     end  
+  end
   
+  describe 'GET #show as an external http request' do
+    before do
+      xhr :get, :show, format: :json, id: recipe_id
+    end
+    
+    subject(:results){ JSON.parse(response.body) }
+    
+    context 'when the recipe exists' do
+      let(:recipe){
+        Recipe.create!(name: 'Baked potato',
+               instructions: 'nuke for 20 minutes')
+      }
+      let(:recipe_id){ recipe.id }
+      it { expect(response.status).to eq(200) }
+      it { expect(results["id"]).to eq(recipe.id) }
+      it { expect(results["name"]).to eq(recipe.name) }
+      it { expect(results["instructions"]).to eq(recipe.instructions) }
+    end
+      
+    context 'when the recipe does not exist' do
+      let(:recipe_id) { -9999 }
+      it { expect(response.status).to eq(404) }
+    end
+    
   end
 
 end
